@@ -1,0 +1,129 @@
+You are designing a full-stack application using **React Native (frontend)** and **Node.js + Express.js (backend)** for an **AI-Powered Micro-Investment Advisor** targeting **low-income users**.  
+
+The app’s goal is to help users save ₹10–₹50/day safely and invest in secure options.  
+Theme should be **modern, elegant, and bank-trustworthy**, inspired by **Punjab & Sind Bank** aesthetics but with a fresh fintech feel.
+
+---
+
+### BRANDING
+- Primary colors: Emerald green (#006B3F), Golden yellow (#FFD700), Warm ivory (#FAF8F0).
+- Accent colors: Navy blue (#003153), Soft orange (#FF914D).
+- Typography: Poppins or Nunito (headings), Inter (body text).
+- Logo placeholder: Minimal emblem with ₹ symbol and wheat motif.
+- Visual tone: Friendly, secure, inclusive for semi-urban/rural India.
+
+---
+
+### FRONTEND (React Native)
+#### **Pages**
+1. **Onboarding Flow (3 screens)**:
+   - Screen 1: Welcome + logo, tagline “Save a little, grow a lot” with EN/HI/PB toggle.
+   - Screen 2: Form (income frequency, rent, EMI, savings goal).
+   - Screen 3: Permissions request (SMS reading simulation, notifications).
+   - Data: Send collected data to backend `/user/setup`.
+
+2. **Home Dashboard**:
+   - Card: “Today’s Safe Save” amount + confidence level (High/Med/Low).
+   - Weekly savings chart (data from `/transactions/week`).
+   - Impact card (“You’ll reach ₹X in Y months sooner”).
+   - Quick actions: Save Now (POST to `/transactions/add`), Pause Saving, Set Goal.
+
+3. **Transactions**:
+   - Pull from backend `/transactions` (fake generated on server).
+   - Each transaction: merchant, amount, category, date, icon.
+   - Edit category (PUT `/transactions/:id`).
+   - Always sorted newest first.
+
+4. **Planner**:
+   - Monthly projection chart (GET `/projection`).
+   - Editable budgets (PUT `/budget`).
+   - Emergency fund tracker.
+
+5. **Education Hub**:
+   - GET `/tips` for saving/fraud prevention content.
+   - List cards with expand option.
+
+---
+
+#### **Frontend Components**
+- **Header** (with multilingual toggle).
+- **BottomNav** (Home, Transactions, Planner, Learn).
+- **Card** (gradient header, rounded corners, shadows).
+- **ChartCard** (minimalist graphs).
+- **TransactionList** (with category edit).
+- **LanguageToggle** (updates state + sends preference to backend).
+
+---
+
+### BACKEND (Node.js + Express.js)
+#### **Endpoints**
+1. **User Setup**
+   - `POST /user/setup`
+   - Body: { name?, incomeFrequency, rent, emi, goal, language }
+   - Store in-memory or SQLite (for hackathon).
+
+2. **Generate Fake Transactions**
+   - `GET /transactions`
+   - Logic:
+     - Merchants: ['Big Bazaar', 'Paytm Recharge', 'Punjab Kirana Store', 'Bharat Gas', 'State Bus Depot', 'Swiggy', 'LIC Premium'].
+     - Amount: ₹10–₹2000 random.
+     - Category weights: Essential 50%, Discretionary 25%, Debt 15%, Income 10%.
+     - Date: Last 30 days random.
+     - Count: 8–15 per request.
+     - Sort: Newest first.
+   - Returns array of transactions.
+
+3. **Add Transaction**
+   - `POST /transactions/add`
+   - Body: { merchant, amount, category, date? }
+   - Append to in-memory transaction list.
+
+4. **Update Transaction Category**
+   - `PUT /transactions/:id`
+   - Body: { category }
+   - Update transaction in list.
+
+5. **Weekly Data**
+   - `GET /transactions/week`
+   - Return aggregated last 7 days data for charts.
+
+6. **Monthly Projection**
+   - `GET /projection`
+   - Calculate projected surplus vs essentials floor based on transactions & budgets.
+
+7. **Budgets**
+   - `PUT /budget`
+   - Body: { essentials, discretionary, debt }
+   - Store and use in projection calculations.
+
+8. **Education Tips**
+   - `GET /tips`
+   - Return 5–10 preloaded saving/fraud prevention tips in EN/HI/PB.
+
+---
+
+### DATA FLOW
+- On app launch, frontend calls `/transactions` to get fake data.
+- Home Dashboard uses `/transactions/week` to populate weekly graph.
+- Planner uses `/projection` and `/budget` for monthly view.
+- Editing a transaction updates backend, then refetches data.
+- All multilingual strings fetched from backend for consistency.
+
+---
+
+### REQUIREMENTS
+- Mobile-first, clean UI with Punjab & Sind Bank–inspired styling.
+- Multilingual support: English, Hindi, Punjabi.
+- Fake transaction generator runs on backend, not frontend.
+- Charts should be functional using real API data.
+- All navigation between screens should work without crashes.
+- Backend can be in-memory (no full DB) for hackathon but structured for later DB integration.
+
+---
+
+### GOAL
+Produce a **complete, developer-friendly full-stack app**:
+- React Native frontend with 5 screens & navigation.
+- Node.js + Express backend with working API endpoints.
+- Fresh fake transactions every launch.
+- Theming & UX that feels modern, elegant, and trustworthy.
