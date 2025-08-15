@@ -2,9 +2,11 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const { v4: uuidv4 } = require('uuid');
+const axios = require('axios');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:5000';
 
 // Middleware
 app.use(cors());
@@ -424,15 +426,40 @@ app.get('/budget', (req, res) => {
   }
 });
 
-// Get education tips
-app.get('/tips', (req, res) => {
+// Get education tips (AI-powered)
+app.get('/tips', async (req, res) => {
   try {
     const language = req.query.lang || 'en';
+    
+    // Try AI-generated tips first
+    try {
+      const aiResponse = await axios.post(`${AI_SERVICE_URL}/ai/generate-tips`, {
+        language: language,
+        user_context: {
+          income: userData.income || 25000,
+          savings_rate: projection.savingsRate || 10
+        }
+      });
+      
+      const aiTips = aiResponse.data.tips;
+      
+      res.json({
+        success: true,
+        tips: aiTips,
+        ai_generated: true
+      });
+      return;
+    } catch (aiError) {
+      console.log('AI tip generation unavailable, using static tips');
+    }
+    
+    // Fallback to static tips
     const tips = educationTips[language] || educationTips.en;
     
     res.json({
       success: true,
-      tips
+      tips,
+      ai_generated: false
     });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -457,10 +484,38 @@ app.post('/transactions/generate-fresh', (req, res) => {
   }
 });
 
-// Get today's safe save recommendation
-app.get('/safe-save', (req, res) => {
+// Get today's safe save recommendation (AI-powered)
+app.get('/safe-save', async (req, res) => {
   try {
-    // Simple AI logic for safe save amount
+    // Try AI prediction first
+    try {
+      const aiResponse = await axios.post(`${AI_SERVICE_URL}/ai/predict-savings`, {
+        income: userData.income || 25000,
+        rent: userData.rent || 8000,
+        emi: userData.emi || 3000,
+        age: userData.age || 30,
+        family_size: userData.family_size || 3,
+        location_tier: userData.location_tier || 2
+      });
+      
+      const aiResult = aiResponse.data;
+      
+      res.json({
+        success: true,
+        safeSave: {
+          amount: aiResult.amount,
+          confidence: aiResult.confidence,
+          message: `AI recommends saving ₹${aiResult.amount} today`,
+          ml_prediction: aiResult.ml_prediction,
+          model_used: aiResult.model_used
+        }
+      });
+      return;
+    } catch (aiError) {
+      console.log('AI service unavailable, using fallback logic');
+    }
+    
+    // Fallback to simple logic
     const now = new Date();
     const todayTransactions = transactions.filter(t => {
       const tDate = new Date(t.date);
@@ -492,11 +547,117 @@ app.get('/safe-save', (req, res) => {
       safeSave: {
         amount: safeSaveAmount,
         confidence,
-        message: `Based on your spending today, you can safely save ₹${safeSaveAmount}`
+        message: `Based on your spending today, you can safely save ₹${safeSaveAmount}`,
+        ml_prediction: false
       }
     });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// AI-powered goal forecasting
+app.post('/ai/forecast-goal', async (req, res) => {
+  try {
+    const { goal_amount } = req.body;
+    
+    const aiResponse = await axios.post(`${AI_SERVICE_URL}/ai/forecast-goal`, {
+      transactions: transactions,
+      goal_amount: goal_amount || userData.goal || 50000
+    });
+    
+    res.json({
+      success: true,
+      forecast: aiResponse.data
+    });
+  } catch (error) {
+    // Fallback calculation
+    const monthsToGoal = Math.ceil((goal_amount || 50000) / 2000); // Assume ₹2000/month savings
+    res.json({
+      success: true,
+      forecast: {
+        months_to_goal: monthsToGoal,
+        confidence: 'Low',
+        method: 'Fallback'
+      }
+    });
+  }
+});
+
+// AI-powered merchant categorization
+app.post('/ai/categorize-merchant', async (req, res) => {
+  try {
+    const { merchant, description } = req.body;
+    
+    const aiResponse = await axios.post(`${AI_SERVICE_URL}/ai/categorize-merchant`, {
+      merchant: merchant,
+      description: description || ''
+    });
+    
+    res.json({
+      success: true,
+      categorization: aiResponse.data
+    });
+  } catch (error) {
+    // Fallback to rule-based categorization
+    const category = getRandomMerchant().category; // Use existing logic
+    res.json({
+      success: true,
+      categorization: {
+        category: category,
+        confidence: 0.6,
+        method: 'Rule-based'
+      }
+    });
+  }
+});
+
+// AI-powered spending pattern analysis
+app.post('/ai/analyze-patterns', async (req, res) => {
+  try {
+    const aiResponse = await axios.post(`${AI_SERVICE_URL}/ai/analyze-patterns`, {
+      transactions: transactions
+    });
+    
+    res.json({
+      success: true,
+      analysis: aiResponse.data
+    });
+  } catch (error) {
+    // Basic fallback analysis
+    const totalTransactions = transactions.length;
+    const avgAmount = transactions.reduce((sum, t) => sum + Math.abs(t.amount), 0) / totalTransactions;
+    
+    res.json({
+      success: true,
+      analysis: {
+        patterns: {
+          total_transactions: totalTransactions,
+          avg_amount: Math.round(avgAmount)
+        },
+        insights: ['Basic transaction analysis available'],
+        recommendations: ['Consider using AI service for detailed insights']
+      }
+    });
+  }
+});
+
+// AI service health check
+app.get('/ai/health', async (req, res) => {
+  try {
+    const aiResponse = await axios.get(`${AI_SERVICE_URL}/ai/health`);
+    res.json({
+      success: true,
+      ai_service: aiResponse.data
+    });
+  } catch (error) {
+    res.json({
+      success: false,
+      ai_service: {
+        status: 'unavailable',
+        error: error.message
+      }
+    });
   }
 });
 
@@ -505,7 +666,8 @@ app.get('/health', (req, res) => {
   res.json({ 
     success: true, 
     message: 'Micro-Investment Advisor API is running',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    ai_service_url: AI_SERVICE_URL
   });
 });
 

@@ -1,6 +1,6 @@
 # Micro-Investment Advisor Backend API
 
-A Node.js + Express.js backend for the AI-Powered Micro-Investment Advisor app targeting low-income users in India.
+A Node.js + Express.js backend with integrated AI/ML service for the AI-Powered Micro-Investment Advisor app targeting low-income users in India.
 
 ## Features
 
@@ -8,7 +8,11 @@ A Node.js + Express.js backend for the AI-Powered Micro-Investment Advisor app t
 - 💰 **Fake Transaction Generator**: Realistic transaction data with Indian merchants
 - 📊 **Analytics**: Weekly spending patterns and monthly projections
 - 🌐 **Multilingual**: Support for English, Hindi, and Punjabi
-- 🤖 **AI Recommendations**: Smart daily savings suggestions based on spending patterns
+- 🤖 **AI/ML Integration**: Machine learning models for predictions and analysis
+- 🧠 **Smart Recommendations**: ML-powered daily savings suggestions
+- 📈 **Time Series Forecasting**: Prophet-based goal achievement predictions
+- 🔤 **NLP Processing**: Hugging Face transformers for merchant categorization
+- 💬 **LLM-Powered Tips**: OpenAI integration for personalized financial advice
 
 ## Quick Start
 
@@ -23,19 +27,36 @@ cd backend
 npm install
 ```
 
-### Run Development Server
+### AI/ML Setup (Optional but Recommended)
 
 ```bash
-npm run dev
+# Setup Python AI service
+./setup_ai.sh
+
+# Set OpenAI API key for LLM features (optional)
+export OPENAI_API_KEY="your-key-here"
 ```
 
-### Run Production Server
+### Run Services
 
+**Option 1: Start both services together**
 ```bash
+./start_services.sh
+```
+
+**Option 2: Start manually**
+```bash
+# Terminal 1: Start AI service
+source ai_env/bin/activate
+python ai_service.py
+
+# Terminal 2: Start Node.js API
 npm start
 ```
 
-The API will be available at `http://localhost:3000`
+The API will be available at:
+- Node.js API: `http://localhost:3000`
+- AI Service: `http://localhost:5000`
 
 ## API Endpoints
 
@@ -69,7 +90,13 @@ The API will be available at `http://localhost:3000`
 - **GET** `/safe-save` - Get today's AI-recommended safe save amount
 
 ### Education
-- **GET** `/tips?lang=hi` - Get financial education tips in specified language
+- **GET** `/tips?lang=hi` - Get financial education tips (AI-powered when available)
+
+### AI/ML Endpoints
+- **POST** `/ai/forecast-goal` - Time series forecasting for goal achievement
+- **POST** `/ai/categorize-merchant` - NLP-powered merchant categorization
+- **POST** `/ai/analyze-patterns` - ML spending pattern analysis
+- **GET** `/ai/health` - AI service health check
 
 ## Sample Data
 
