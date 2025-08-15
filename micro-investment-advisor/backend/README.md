@@ -60,6 +60,7 @@ The API will be available at `http://localhost:3000`
 - **POST** `/transactions/add` - Add manual transaction
 - **PUT** `/transactions/:id` - Update transaction category
 - **GET** `/transactions/week` - Get weekly aggregated data for charts
+- **POST** `/transactions/generate-fresh` - Generate 20-25 fresh unique transactions
 
 ### Financial Planning
 - **GET** `/projection` - Monthly financial projections and AI insights
@@ -84,6 +85,12 @@ The API includes realistic Indian merchants across categories:
 - **Discretionary** (25% weight): Entertainment, shopping
 - **Debt** (15% weight): EMIs, loan payments
 - **Income** (10% weight): Salary, freelance work
+
+### Fresh Transaction Generation
+- **Count**: 20-25 transactions per generation
+- **Uniqueness**: Prevents duplicate merchant-time combinations
+- **Realistic Distribution**: Maintains proper category weights
+- **Date Range**: Last 30 days with random distribution
 
 ## AI Logic
 

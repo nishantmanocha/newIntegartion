@@ -142,18 +142,33 @@ function getRandomDate() {
   return new Date(thirtyDaysAgo.getTime() + Math.random() * (now.getTime() - thirtyDaysAgo.getTime()));
 }
 
-function generateFakeTransactions(count = 12) {
+function generateFakeTransactions(count = 22) {
   const categories = ['Essential', 'Essential', 'Essential', 'Essential', 'Essential', 
                      'Discretionary', 'Discretionary', 'Discretionary', 
                      'Debt', 'Debt', 'Income'];
   
   const newTransactions = [];
+  const usedCombinations = new Set(); // To ensure uniqueness
   
   for (let i = 0; i < count; i++) {
-    const category = categories[Math.floor(Math.random() * categories.length)];
-    const merchant = getRandomMerchant(category);
-    const amount = getRandomAmount(category);
-    const date = getRandomDate();
+    let category, merchant, amount, date;
+    let attempts = 0;
+    let combinationKey;
+    
+    // Try to generate unique combinations (max 50 attempts to avoid infinite loop)
+    do {
+      category = categories[Math.floor(Math.random() * categories.length)];
+      merchant = getRandomMerchant(category);
+      amount = getRandomAmount(category);
+      date = getRandomDate();
+      
+      // Create a combination key for uniqueness (merchant + date rounded to hour)
+      const dateKey = new Date(date).toISOString().slice(0, 13); // YYYY-MM-DDTHH
+      combinationKey = `${merchant.name}-${dateKey}`;
+      attempts++;
+    } while (usedCombinations.has(combinationKey) && attempts < 50);
+    
+    usedCombinations.add(combinationKey);
     
     newTransactions.push({
       id: uuidv4(),
@@ -197,7 +212,7 @@ app.post('/user/setup', (req, res) => {
     };
     
     // Generate initial transactions
-    transactions = generateFakeTransactions(15);
+    transactions = generateFakeTransactions(22);
     
     res.json({
       success: true,
@@ -424,6 +439,24 @@ app.get('/tips', (req, res) => {
   }
 });
 
+// Generate fresh transactions endpoint
+app.post('/transactions/generate-fresh', (req, res) => {
+  try {
+    // Generate 20-25 fresh unique transactions
+    const count = Math.floor(Math.random() * 6) + 20; // Random between 20-25
+    transactions = generateFakeTransactions(count);
+    
+    res.json({
+      success: true,
+      message: `Generated ${count} fresh transactions`,
+      count: transactions.length,
+      transactions: transactions
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Get today's safe save recommendation
 app.get('/safe-save', (req, res) => {
   try {
@@ -482,7 +515,7 @@ app.listen(PORT, () => {
   console.log(`📊 Health check: http://localhost:${PORT}/health`);
   
   // Generate initial sample data
-  transactions = generateFakeTransactions(15);
+  transactions = generateFakeTransactions(22);
   console.log(`💰 Generated ${transactions.length} sample transactions`);
 });
 

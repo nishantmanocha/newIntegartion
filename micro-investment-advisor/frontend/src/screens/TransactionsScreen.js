@@ -109,6 +109,34 @@ const TransactionsScreen = ({ navigation }) => {
     }
   };
 
+  const handleGenerateFreshTransactions = () => {
+    Alert.alert(
+      language === 'hi' ? 'नए लेन-देन जेनरेट करें' : 
+      language === 'pb' ? 'ਨਵੇਂ ਲੈਣ-ਦੇਣ ਜਨਰੇਟ ਕਰੋ' : 
+      'Generate Fresh Transactions',
+      language === 'hi' ? 'क्या आप 20-25 नए अनोखे लेन-देन जेनरेट करना चाहते हैं?' :
+      language === 'pb' ? 'ਕੀ ਤੁਸੀਂ 20-25 ਨਵੇਂ ਵਿਲੱਖਣ ਲੈਣ-ਦੇਣ ਜਨਰੇਟ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?' :
+      'Do you want to generate 20-25 fresh unique transactions?',
+      [
+        { text: language === 'hi' ? 'रद्द करें' : language === 'pb' ? 'ਰੱਦ ਕਰੋ' : 'Cancel', style: 'cancel' },
+        { 
+          text: language === 'hi' ? 'हां, जेनरेट करें' : language === 'pb' ? 'ਹਾਂ, ਜਨਰੇਟ ਕਰੋ' : 'Yes, Generate',
+          onPress: async () => {
+            try {
+              const result = await api.generateFreshTransactions();
+              Alert.alert(
+                language === 'hi' ? 'सफल!' : language === 'pb' ? 'ਸਫਲ!' : 'Success!',
+                `${result.count} ${language === 'hi' ? 'नए लेन-देन जेनरेट किए गए' : language === 'pb' ? 'ਨਵੇਂ ਲੈਣ-ਦੇਣ ਜਨਰੇਟ ਕੀਤੇ ਗਏ' : 'fresh transactions generated'}`
+              );
+            } catch (error) {
+              Alert.alert('Error', 'Failed to generate transactions. Please try again.');
+            }
+          }
+        }
+      ]
+    );
+  };
+
   const renderTransaction = ({ item }) => (
     <TouchableOpacity 
       style={styles.transactionItem}
@@ -203,6 +231,19 @@ const TransactionsScreen = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       <Header title={content.title} />
       
+      {/* Generate Fresh Transactions Button */}
+      <View style={styles.headerActions}>
+        <TouchableOpacity 
+          style={styles.generateButton}
+          onPress={handleGenerateFreshTransactions}
+        >
+          <Ionicons name="refresh" size={16} color={colors.white} />
+          <Text style={styles.generateButtonText}>
+            {language === 'hi' ? 'नया डेटा' : language === 'pb' ? 'ਨਵਾਂ ਡੇਟਾ' : 'Fresh Data'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+      
       <FlatList
         data={transactions}
         renderItem={renderTransaction}
@@ -224,6 +265,30 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  headerActions: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    alignItems: 'flex-end',
+  },
+  generateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.secondary,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  generateButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.white,
+    marginLeft: 6,
   },
   listContainer: {
     padding: 16,

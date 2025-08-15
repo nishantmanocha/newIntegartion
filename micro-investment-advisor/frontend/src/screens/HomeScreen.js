@@ -69,6 +69,7 @@ const HomeScreen = ({ navigation }) => {
         saveNow: 'Save Now',
         pauseSaving: 'Pause Saving',
         setGoal: 'Set Goal',
+        generateFresh: 'Generate Fresh Data',
         impactMessage: 'You\'ll reach your goal',
         monthsEarlier: 'months sooner',
         confidence: 'Confidence',
@@ -84,6 +85,7 @@ const HomeScreen = ({ navigation }) => {
         saveNow: 'अभी बचाएं',
         pauseSaving: 'बचत रोकें',
         setGoal: 'लक्ष्य सेट करें',
+        generateFresh: 'नया डेटा जेनरेट करें',
         impactMessage: 'आप अपना लक्ष्य पूरा करेंगे',
         monthsEarlier: 'महीने पहले',
         confidence: 'विश्वास',
@@ -99,6 +101,7 @@ const HomeScreen = ({ navigation }) => {
         saveNow: 'ਹੁਣ ਬਚਾਓ',
         pauseSaving: 'ਬਚਤ ਰੋਕੋ',
         setGoal: 'ਟੀਚਾ ਸੈੱਟ ਕਰੋ',
+        generateFresh: 'ਨਵਾਂ ਡੇਟਾ ਜਨਰੇਟ ਕਰੋ',
         impactMessage: 'ਤੁਸੀਂ ਆਪਣਾ ਟੀਚਾ ਪੂਰਾ ਕਰੋਗੇ',
         monthsEarlier: 'ਮਹੀਨੇ ਪਹਿਲਾਂ',
         confidence: 'ਭਰੋਸਾ',
@@ -134,6 +137,35 @@ const HomeScreen = ({ navigation }) => {
               loadDashboardData();
             } catch (error) {
               Alert.alert('Error', 'Failed to save. Please try again.');
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handleGenerateFreshTransactions = () => {
+    Alert.alert(
+      language === 'hi' ? 'नए लेन-देन जेनरेट करें' : 
+      language === 'pb' ? 'ਨਵੇਂ ਲੈਣ-ਦੇਣ ਜਨਰੇਟ ਕਰੋ' : 
+      'Generate Fresh Transactions',
+      language === 'hi' ? 'क्या आप 20-25 नए अनोखे लेन-देन जेनरेट करना चाहते हैं?' :
+      language === 'pb' ? 'ਕੀ ਤੁਸੀਂ 20-25 ਨਵੇਂ ਵਿਲੱਖਣ ਲੈਣ-ਦੇਣ ਜਨਰੇਟ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?' :
+      'Do you want to generate 20-25 fresh unique transactions?',
+      [
+        { text: language === 'hi' ? 'रद्द करें' : language === 'pb' ? 'ਰੱਦ ਕਰੋ' : 'Cancel', style: 'cancel' },
+        { 
+          text: language === 'hi' ? 'हां, जेनरेट करें' : language === 'pb' ? 'ਹਾਂ, ਜਨਰੇਟ ਕਰੋ' : 'Yes, Generate',
+          onPress: async () => {
+            try {
+              const result = await api.generateFreshTransactions();
+              Alert.alert(
+                language === 'hi' ? 'सफल!' : language === 'pb' ? 'ਸਫਲ!' : 'Success!',
+                `${result.count} ${language === 'hi' ? 'नए लेन-देन जेनरेट किए गए' : language === 'pb' ? 'ਨਵੇਂ ਲੈਣ-ਦੇਣ ਜਨਰੇਟ ਕੀਤੇ ਗਏ' : 'fresh transactions generated'}`
+              );
+              loadDashboardData();
+            } catch (error) {
+              Alert.alert('Error', 'Failed to generate transactions. Please try again.');
             }
           }
         }
@@ -303,6 +335,16 @@ const HomeScreen = ({ navigation }) => {
               <View style={styles.actionButtonSecondary}>
                 <Ionicons name="flag" size={24} color={colors.info} />
                 <Text style={styles.actionButtonSecondaryText}>{content.setGoal}</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={handleGenerateFreshTransactions}
+            >
+              <View style={[styles.actionButtonSecondary, { backgroundColor: colors.secondary + '20' }]}>
+                <Ionicons name="refresh" size={24} color={colors.secondary} />
+                <Text style={[styles.actionButtonSecondaryText, { color: colors.secondary }]}>{content.generateFresh}</Text>
               </View>
             </TouchableOpacity>
           </View>

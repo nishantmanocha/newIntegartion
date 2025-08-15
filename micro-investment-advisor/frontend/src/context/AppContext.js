@@ -69,6 +69,20 @@ export const AppProvider = ({ children }) => {
       }
     },
 
+    generateFreshTransactions: async () => {
+      try {
+        setLoading(true);
+        const response = await axios.post(`${API_BASE_URL}/transactions/generate-fresh`);
+        setTransactions(response.data.transactions);
+        return response.data;
+      } catch (error) {
+        setError(error.message);
+        throw error;
+      } finally {
+        setLoading(false);
+      }
+    },
+
     updateTransaction: async (id, data) => {
       try {
         const response = await axios.put(`${API_BASE_URL}/transactions/${id}`, data);
